@@ -15,6 +15,7 @@ import authRoutes from "./routes/auth.routes.js";
 import publicRoutes from "./routes/public.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import locationRoutes from "./routes/location.routes.js";
+import uploadRoutes from "./routes/uploads.routes.js";
 
 dotenv.config();
 
@@ -60,7 +61,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", publicRoutes); // POST /api/responses
 app.use("/api/admin", adminRoutes); // GET/POST/PATCH /api/admin/submissions, GET /api/admin/export
 app.use("/api/locations", locationRoutes); // GET /lgas, /wards?lga=, /polling-units?lga=&ward=
-
+app.use("/api/uploads", uploadRoutes)
 // --- Fallback error handler ----------------------------------------------
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);

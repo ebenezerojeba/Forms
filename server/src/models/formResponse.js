@@ -17,6 +17,8 @@ const FormResponseSchema = new mongoose.Schema(
     email: { type: String, trim: true, lowercase: true },
     sex: { type: String, enum: ["M", "F"], required: true },
     dateOfBirth: { type: String, required: true },
+    photoUrl: { type: String, required: true },
+    photoPublicId: { type: String },
     maritalStatus: {
       type: String,
       enum: ["Single", "Married", "Divorced", "Widowed"],

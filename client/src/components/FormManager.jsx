@@ -327,12 +327,12 @@
 //   );
 // }
 
-
-
 import React, { useState } from 'react';
 import { useOfflineForm } from '../hooks/useOfflineForm';
 import { useLocations } from '../hooks/useLocations';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import PassportPhotoUpload from './PassportPhotoUpload';
+import { uploadPhotoToCloudinary } from '../utils/cloudinaryUpload';
 // Place the uploaded logo file at src/assets/apc-logo.png — Vite will
 // bundle and hash it, unlike a public/ reference, so browser caching
 // doesn't serve a stale copy if you swap the file later.
@@ -373,6 +373,12 @@ export default function FormManager() {
     bankDetails: { bankName: '', accountNo: '', accountName: '' }
   });
   const [uiMessage, setUiMessage] = useState({ text: '', type: '' });
+  const [photoBlob, setPhotoBlob] = useState(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+
+  const handlePhotoReady = (blob) => {
+    setPhotoBlob(blob);
+  };
 
   const handleTopLevelChange = (e) => {
     const { name, value } = e.target;
@@ -413,8 +419,37 @@ export default function FormManager() {
       setUiMessage({ text: 'Please complete all required (*) fields before submitting.', type: 'error' });
       return;
     }
+    if (!photoBlob) {
+      setUiMessage({ text: 'Please add a passport photograph before submitting.', type: 'error' });
+      return;
+    }
 
-    const result = await submitForm(formData);
+    let submissionPayload = { ...formData };
+
+    if (isOnline) {
+      setPhotoUploading(true);
+      try {
+        const { url, publicId } = await uploadPhotoToCloudinary(photoBlob);
+        submissionPayload = { ...submissionPayload, photoUrl: url, photoPublicId: publicId };
+      } catch (err) {
+        setPhotoUploading(false);
+        setUiMessage({ text: err.message || 'Photo upload failed. Please try again.', type: 'error' });
+        return;
+      }
+      setPhotoUploading(false);
+    } else {
+      // TODO(offline queueing): useOfflineForm currently doesn't know
+      // about binary attachments. Attaching the raw Blob here only
+      // works once that hook's persistence layer is IndexedDB (not
+      // localStorage, which can't hold Blobs and has a ~5-10MB cap)
+      // and its sync routine is updated to call
+      // uploadPhotoToCloudinary(photoBlob) for each queued item before
+      // submitting its form data. Wiring this fully requires seeing
+      // that hook's current implementation.
+      submissionPayload = { ...submissionPayload, photoBlob };
+    }
+
+    const result = await submitForm(submissionPayload);
 
     if (!result.success) {
       setUiMessage({ text: result.error, type: 'error' });
@@ -426,6 +461,7 @@ export default function FormManager() {
       lga: '', ward: '', puName: '', puCode: '', pvcNumber: '', nin: '',
       bankDetails: { bankName: '', accountNo: '', accountName: '' }
     });
+    setPhotoBlob(null);
     selectLga('');
 
     if (result.status === 'online') {
@@ -508,6 +544,9 @@ export default function FormManager() {
             <div className="space-y-4">
               <SectionHeading letter="A" title="Personal Particulars" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                <div className="md:col-span-2">
+                  <PassportPhotoUpload onPhotoReady={handlePhotoReady} disabled={photoUploading} />
+                </div>
                 <div className="md:col-span-2">
                   <label className={labelClass}>Full Name *</label>
                   <input type="text" name="fullName" value={formData.fullName} onChange={handleTopLevelChange} className={inputClass} placeholder="SURNAME Firstname Othername" />
@@ -628,9 +667,10 @@ export default function FormManager() {
 
             <button
               type="submit"
-              className="w-full bg-puc-green hover:bg-puc-green-dark text-white font-semibold py-3 px-4 rounded-md text-sm tracking-wide shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-puc-green/50 focus:ring-offset-2"
+              disabled={photoUploading}
+              className="w-full bg-puc-green hover:bg-puc-green-dark disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-md text-sm tracking-wide shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-puc-green/50 focus:ring-offset-2"
             >
-              Submit Nomination
+              {photoUploading ? 'Uploading photo…' : 'Submit Nomination'}
             </button>
           </form>
         </div>

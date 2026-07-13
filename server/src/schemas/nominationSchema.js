@@ -26,14 +26,23 @@ export const nominationSchema = z
   .object({
     fullName: z.string().trim().min(3, "Full name is required.").max(120),
     address: z.string().trim().min(5, "Address is required.").max(240),
-    telNo: z.string().trim().regex(phoneRegex, "Enter a valid Nigerian phone number."),
+    telNo: z
+      .string()
+      .trim()
+      .regex(phoneRegex, "Enter a valid Nigerian phone number."),
     email: z.string().trim().toLowerCase().email().optional().or(z.literal("")),
-    sex: z.enum(["M", "F"], { errorMap: () => ({ message: "Select a valid sex." }) }),
+    sex: z.enum(["M", "F"], {
+      errorMap: () => ({ message: "Select a valid sex." }),
+    }),
     dateOfBirth: z
       .string()
-      .refine((val) => !Number.isNaN(Date.parse(val)), "Enter a valid date of birth.")
+      .refine(
+        (val) => !Number.isNaN(Date.parse(val)),
+        "Enter a valid date of birth.",
+      )
       .refine((val) => {
-        const age = (Date.now() - Date.parse(val)) / (1000 * 60 * 60 * 24 * 365.25);
+        const age =
+          (Date.now() - Date.parse(val)) / (1000 * 60 * 60 * 24 * 365.25);
         return age >= 18;
       }, "Nominee must be at least 18 years old."),
     maritalStatus: z.enum(["Single", "Married", "Divorced", "Widowed"]),
@@ -43,7 +52,10 @@ export const nominationSchema = z
     puName: z.string().trim().min(2).max(120),
     puCode: z.string().trim().min(3).max(30),
 
+    photoUrl: z.string().url(),
+    photoPublicId: z.string().optional(), // Cloudinary public_id — used later if you ever need to delete/replace the image; not required from the client
     pvcNumber: z.string().trim().min(6, "Enter a valid PVC number.").max(40),
+
     nin: z.string().trim().regex(ninRegex, "NIN must be exactly 11 digits."),
 
     bankDetails: bankDetailsSchema,
