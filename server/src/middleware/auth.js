@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import Admin from "../models/Admin.js";
+import Admin from "../models/admin.js";
+// import Admin from "../models/Admin.js";
 
 /**
  * Verifies the Bearer token on the request, loads the admin record, and
