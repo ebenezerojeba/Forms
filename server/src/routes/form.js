@@ -1,6 +1,6 @@
 import express from "express";
 import ExcelJS from "exceljs";
-import FormResponse from "../models/FormResponse.js";
+import FormResponse from "../models/formResponse.js";
 
 const router = express.Router();
 

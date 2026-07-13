@@ -1,5 +1,5 @@
 import express from "express";
-import PollingUnit from "../models/PollingUnit.js";
+import PollingUnit from "../models/pollingUnit.js";
 
 const router = express.Router();
 

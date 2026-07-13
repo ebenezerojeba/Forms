@@ -1,6 +1,6 @@
 import express from "express";
 import ExcelJS from "exceljs";
-import FormResponse from "../models/FormResponse.js";
+import FormResponse from "../models/formResponse.js";
 import { protect, requireRole } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validate.js";
 import { nominationSchema } from "../schemas/nominationSchema.js";
