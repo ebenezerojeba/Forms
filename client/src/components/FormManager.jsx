@@ -1,7 +1,361 @@
+// import React, { useState } from 'react';
+// import { useOfflineForm } from '../hooks/useOfflineForm';
+// import { useLocations } from '../hooks/useLocations';
+// import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+
+// // Generic seal placeholder — NOT the party emblem. Swap the <g> contents
+// // for the authorized APC crest asset; keep the viewBox and circle so it
+// // drops in cleanly wherever <Seal /> is used below.
+// function Seal({ className = '' }) {
+//   return (
+//     <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+//       <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="2" />
+//       <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="1" />
+//       {Array.from({ length: 24 }).map((_, i) => {
+//         const angle = (i * 360) / 24;
+//         const rad = (angle * Math.PI) / 180;
+//         const x1 = 50 + 40 * Math.cos(rad);
+//         const y1 = 50 + 40 * Math.sin(rad);
+//         const x2 = 50 + 44 * Math.cos(rad);
+//         const y2 = 50 + 44 * Math.sin(rad);
+//         return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth="1.5" />;
+//       })}
+//       <path
+//         d="M50 28 L55.5 43 L71 43 L58.5 52 L63 67 L50 58 L37 67 L41.5 52 L29 43 L44.5 43 Z"
+//         fill="currentColor"
+//       />
+//     </svg>
+//   );
+// }
+
+// function SectionHeading({ letter, title }) {
+//   return (
+//     <div className="flex items-baseline gap-3 mb-1">
+//       <span
+//         className="font-mono text-[11px] font-semibold text-puc-brass border border-puc-brass/50 rounded px-1.5 py-0.5"
+//       >
+//         PART {letter}
+//       </span>
+//       <h3 className="font-body text-xs font-bold uppercase tracking-[0.15em] text-puc-green">
+//         {title}
+//       </h3>
+//     </div>
+//   );
+// }
+
+// const inputClass =
+//   "w-full px-3 py-2.5 bg-white border border-puc-paper-line rounded-md text-sm text-puc-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-puc-green/40 focus:border-puc-green transition-colors";
+// const labelClass = "block text-[11px] font-semibold uppercase tracking-wide text-puc-ink/70 mb-1";
+
+// export default function FormManager() {
+//   const { isOnline, queueCount, syncing, syncErrors, dismissSyncError, submitForm, triggerManualSync } = useOfflineForm();
+//   const {
+//     lgas, wards, pollingUnits,
+//     selectedLga, selectedWard,
+//     selectLga, selectWard,
+//     loadingLgas, loadingWards, loadingPUs,
+//     error: locationError,
+//   } = useLocations();
+
+//   const [formData, setFormData] = useState({
+//     fullName: '', address: '', telNo: '', email: '', sex: '', dateOfBirth: '', maritalStatus: '',
+//     lga: '', ward: '', puName: '', puCode: '', pvcNumber: '', nin: '',
+//     bankDetails: { bankName: '', accountNo: '', accountName: '' }
+//   });
+//   const [uiMessage, setUiMessage] = useState({ text: '', type: '' });
+
+//   const handleTopLevelChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleBankChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({
+//       ...prev,
+//       bankDetails: { ...prev.bankDetails, [name]: value }
+//     }));
+//   };
+
+//   const handleLgaChange = (e) => {
+//     const lga = e.target.value;
+//     selectLga(lga);
+//     setFormData(prev => ({ ...prev, lga, ward: '', puName: '', puCode: '' }));
+//   };
+
+//   const handleWardChange = (e) => {
+//     const ward = e.target.value;
+//     selectWard(ward);
+//     setFormData(prev => ({ ...prev, ward, puName: '', puCode: '' }));
+//   };
+
+//   const handlePuChange = (e) => {
+//     const puCode = e.target.value;
+//     const pu = pollingUnits.find(p => p.puCode === puCode);
+//     setFormData(prev => ({ ...prev, puCode, puName: pu ? pu.puName : '' }));
+//   };
+
+//   const handleFormSubmit = async (e) => {
+//     e.preventDefault();
+//     setUiMessage({ text: '', type: '' });
+
+//     if (!formData.fullName || !formData.telNo || !formData.lga || !formData.puCode || !formData.bankDetails.accountNo) {
+//       setUiMessage({ text: 'Please complete all required (*) fields before submitting.', type: 'error' });
+//       return;
+//     }
+
+//     const result = await submitForm(formData);
+
+//     if (!result.success) {
+//       setUiMessage({ text: result.error, type: 'error' });
+//       return;
+//     }
+
+//     setFormData({
+//       fullName: '', address: '', telNo: '', email: '', sex: '', dateOfBirth: '', maritalStatus: '',
+//       lga: '', ward: '', puName: '', puCode: '', pvcNumber: '', nin: '',
+//       bankDetails: { bankName: '', accountNo: '', accountName: '' }
+//     });
+//     selectLga('');
+
+//     if (result.status === 'online') {
+//       setUiMessage({ text: 'Your nomination has been received and recorded.', type: 'success' });
+//     } else {
+//       setUiMessage({ text: 'Saved on this device. It will be submitted automatically once you are back online.', type: 'warning' });
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen security-weave py-8 px-4 sm:px-6 lg:px-8 font-body">
+//       <div className="max-w-3xl mx-auto space-y-5">
+
+//         {/* Connectivity status — quiet, functional, not a hero element */}
+//         <div className={`px-4 py-2.5 rounded-md border flex items-center justify-between text-xs ${
+//           isOnline ? 'bg-white border-puc-paper-line text-puc-ink/70' : 'bg-puc-brass-soft border-puc-brass/40 text-puc-ink'
+//         }`}>
+//           <div className="flex items-center gap-2">
+//             {isOnline ? <Wifi className="h-3.5 w-3.5 text-puc-green" /> : <WifiOff className="h-3.5 w-3.5 text-puc-brass" />}
+//             <span className="font-medium">
+//               {isOnline ? 'Connected — submissions are sent immediately' : 'Offline — your entry will be saved on this device'}
+//             </span>
+//           </div>
+//           {queueCount > 0 && (
+//             <button onClick={triggerManualSync} disabled={syncing || !isOnline} className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded border border-puc-paper-line font-semibold hover:bg-puc-paper">
+//               <RefreshCw className={`h-3 w-3 ${syncing ? 'animate-spin' : ''}`} /> Send {queueCount} saved {queueCount === 1 ? 'entry' : 'entries'}
+//             </button>
+//           )}
+//         </div>
+
+//         {syncErrors.length > 0 && (
+//           <div className="space-y-2">
+//             {syncErrors.map((err) => (
+//               <div key={err.localId} className="p-3 rounded-md border bg-puc-error/5 border-puc-error/30 text-puc-error text-xs flex items-center justify-between gap-3">
+//                 <span><strong>{err.fullName || 'A saved entry'}</strong> could not be submitted: {err.error}</span>
+//                 <button onClick={() => dismissSyncError(err.localId)} className="shrink-0 font-bold underline">Dismiss</button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+
+//         {/* The document itself */}
+//         <div className="bg-white rounded-md border border-puc-paper-line shadow-[0_1px_3px_rgba(15,81,50,0.08)] overflow-hidden">
+
+//           {/* Letterhead */}
+//           <div className="relative bg-puc-green text-white px-6 py-7 overflow-hidden">
+//             <div
+//               className="absolute inset-0 opacity-[0.06]"
+//               style={{
+//                 backgroundImage:
+//                   'repeating-linear-gradient(45deg, currentColor 0px, currentColor 1px, transparent 1px, transparent 10px)',
+//               }}
+//             />
+//             <div className="relative flex items-start justify-between gap-4">
+//               <div>
+//                 <p className="font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-puc-brass-soft">
+//                   All Progressives Congress
+//                 </p>
+//                 <h1 className="font-display text-2xl font-bold tracking-tight mt-1">
+//                   Polling Unit Committee
+//                 </h1>
+//                 <p className="font-body text-sm text-white/75 mt-0.5">Member's Nomination Form</p>
+//               </div>
+//               <Seal className="h-16 w-16 text-puc-brass-soft shrink-0" />
+//             </div>
+//             <p className="relative font-mono text-[10px] text-white/60 mt-5 tracking-wide">
+//               FORM PUC/NG/2026 · Retain a copy of your PVC alongside this submission
+//             </p>
+//           </div>
+
+//           <form onSubmit={handleFormSubmit} className="p-6 space-y-7">
+
+//             {/* PART A */}
+//             <div className="space-y-4">
+//               <SectionHeading letter="A" title="Personal Particulars" />
+//               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+//                 <div className="md:col-span-2">
+//                   <label className={labelClass}>Full Name *</label>
+//                   <input type="text" name="fullName" value={formData.fullName} onChange={handleTopLevelChange} className={inputClass} placeholder="SURNAME Firstname Othername" />
+//                 </div>
+//                 <div className="md:col-span-2">
+//                   <label className={labelClass}>Residential Address *</label>
+//                   <input type="text" name="address" value={formData.address} onChange={handleTopLevelChange} className={inputClass} placeholder="Street, house number, ward area" />
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Telephone Number *</label>
+//                   <input type="tel" name="telNo" value={formData.telNo} onChange={handleTopLevelChange} className={inputClass} placeholder="08012345678" />
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Email Address</label>
+//                   <input type="email" name="email" value={formData.email} onChange={handleTopLevelChange} className={inputClass} placeholder="nominee@domain.com" />
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Sex *</label>
+//                   <select name="sex" value={formData.sex} onChange={handleTopLevelChange} className={`${inputClass} bg-white`}>
+//                     <option value="">Select</option>
+//                     <option value="M">Male</option>
+//                     <option value="F">Female</option>
+//                   </select>
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Date of Birth *</label>
+//                   <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleTopLevelChange} className={inputClass} />
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Marital Status *</label>
+//                   <select name="maritalStatus" value={formData.maritalStatus} onChange={handleTopLevelChange} className={`${inputClass} bg-white`}>
+//                     <option value="">Select</option>
+//                     <option value="Single">Single</option>
+//                     <option value="Married">Married</option>
+//                     <option value="Divorced">Divorced</option>
+//                     <option value="Widowed">Widowed</option>
+//                   </select>
+//                 </div>
+//               </div>
+//             </div>
+
+//             <div className="border-t border-puc-paper-line" />
+
+//             {/* PART B */}
+//             <div className="space-y-4">
+//               <SectionHeading letter="B" title="Electoral Assignment" />
+
+//               {locationError && (
+//                 <p className="text-xs font-medium text-puc-error bg-puc-error/5 border border-puc-error/30 rounded-md p-2.5">{locationError}</p>
+//               )}
+
+//               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+//                 <div>
+//                   <label className={labelClass}>LGA *</label>
+//                   <select name="lga" value={selectedLga} onChange={handleLgaChange} disabled={loadingLgas} className={`${inputClass} bg-white disabled:opacity-60`}>
+//                     <option value="">{loadingLgas ? 'Loading…' : 'Select LGA'}</option>
+//                     {lgas.map((lga) => <option key={lga} value={lga}>{lga}</option>)}
+//                   </select>
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Ward *</label>
+//                   <select name="ward" value={selectedWard} onChange={handleWardChange} disabled={!selectedLga || loadingWards} className={`${inputClass} bg-white disabled:opacity-60`}>
+//                     <option value="">{!selectedLga ? 'Select an LGA first' : loadingWards ? 'Loading…' : 'Select Ward'}</option>
+//                     {wards.map((ward) => <option key={ward} value={ward}>{ward}</option>)}
+//                   </select>
+//                 </div>
+//                 <div className="md:col-span-2">
+//                   <label className={labelClass}>Polling Unit *</label>
+//                   <select name="puCode" value={formData.puCode} onChange={handlePuChange} disabled={!selectedWard || loadingPUs} className={`${inputClass} bg-white disabled:opacity-60`}>
+//                     <option value="">{!selectedWard ? 'Select a ward first' : loadingPUs ? 'Loading…' : 'Select Polling Unit'}</option>
+//                     {pollingUnits.map((pu) => <option key={pu.puCode} value={pu.puCode}>{pu.puName} — {pu.puCode}</option>)}
+//                   </select>
+//                   {formData.puCode && (
+//                     <p className="font-mono text-[11px] text-puc-green mt-1.5">PU Code: {formData.puCode}</p>
+//                   )}
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>PVC Number *</label>
+//                   <input type="text" name="pvcNumber" value={formData.pvcNumber} onChange={handleTopLevelChange} className={`${inputClass} font-mono`} placeholder="Enter full card number" />
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>NIN *</label>
+//                   <input type="text" name="nin" value={formData.nin} onChange={handleTopLevelChange} maxLength={11} className={`${inputClass} font-mono`} placeholder="11-digit number" />
+//                 </div>
+//               </div>
+//             </div>
+
+//             <div className="border-t border-puc-paper-line" />
+
+//             {/* PART C */}
+//             <div className="space-y-4">
+//               <SectionHeading letter="C" title="Remittance Account" />
+//               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+//                 <div>
+//                   <label className={labelClass}>Bank Name *</label>
+//                   <input type="text" name="bankName" value={formData.bankDetails.bankName} onChange={handleBankChange} className={inputClass} placeholder="e.g. GTBank" />
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Account Number *</label>
+//                   <input type="text" name="accountNo" value={formData.bankDetails.accountNo} onChange={handleBankChange} maxLength={10} className={`${inputClass} font-mono`} placeholder="10 digits" />
+//                 </div>
+//                 <div>
+//                   <label className={labelClass}>Account Name *</label>
+//                   <input type="text" name="accountName" value={formData.bankDetails.accountName} onChange={handleBankChange} className={inputClass} placeholder="Must match full name" />
+//                 </div>
+//               </div>
+//             </div>
+
+//             {uiMessage.text && (
+//               <div className={`p-3 rounded-md text-xs font-medium border ${
+//                 uiMessage.type === 'success' ? 'bg-puc-green/5 border-puc-green/30 text-puc-green-dark' :
+//                 uiMessage.type === 'warning' ? 'bg-puc-brass-soft border-puc-brass/40 text-puc-ink' :
+//                 'bg-puc-error/5 border-puc-error/30 text-puc-error'
+//               }`}>
+//                 {uiMessage.text}
+//               </div>
+//             )}
+
+//             <button
+//               type="submit"
+//               className="w-full bg-puc-green hover:bg-puc-green-dark text-white font-semibold py-3 px-4 rounded-md text-sm tracking-wide shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-puc-green/50 focus:ring-offset-2"
+//             >
+//               Submit Nomination
+//             </button>
+//           </form>
+//         </div>
+
+//         <p className="text-center text-[11px] text-puc-ink/40">
+//           Information submitted here is used solely for Polling Unit Committee administration.
+//         </p>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
 import React, { useState } from 'react';
 import { useOfflineForm } from '../hooks/useOfflineForm';
 import { useLocations } from '../hooks/useLocations';
-import { Wifi, WifiOff, RefreshCw, FileText } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+// Place the uploaded logo file at src/assets/apc-logo.png — Vite will
+// bundle and hash it, unlike a public/ reference, so browser caching
+// doesn't serve a stale copy if you swap the file later.
+import apcLogo from '../assets/apc-logo.jpeg';
+
+function SectionHeading({ letter, title }) {
+  return (
+    <div className="flex items-baseline gap-3 mb-1">
+      <span
+        className="font-mono text-[11px] font-semibold text-puc-brass border border-puc-brass/50 rounded px-1.5 py-0.5"
+      >
+        PART {letter}
+      </span>
+      <h3 className="font-body text-xs font-bold uppercase tracking-[0.15em] text-puc-green">
+        {title}
+      </h3>
+    </div>
+  );
+}
+
+const inputClass =
+  "w-full px-3 py-2.5 bg-white border border-puc-paper-line rounded-md text-sm text-puc-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-puc-green/40 focus:border-puc-green transition-colors";
+const labelClass = "block text-[11px] font-semibold uppercase tracking-wide text-puc-ink/70 mb-1";
 
 export default function FormManager() {
   const { isOnline, queueCount, syncing, syncErrors, dismissSyncError, submitForm, triggerManualSync } = useOfflineForm();
@@ -33,12 +387,9 @@ export default function FormManager() {
     }));
   };
 
-  // --- Cascading location handlers ---------------------------------
   const handleLgaChange = (e) => {
     const lga = e.target.value;
     selectLga(lga);
-    // Clear everything downstream so a stale ward/PU from a previous
-    // LGA can never travel with a new one.
     setFormData(prev => ({ ...prev, lga, ward: '', puName: '', puCode: '' }));
   };
 
@@ -49,9 +400,6 @@ export default function FormManager() {
   };
 
   const handlePuChange = (e) => {
-    // The select's value is the puCode; look up the matching name so
-    // both fields get set from one selection — the person only ever
-    // picks a polling unit, never types a code.
     const puCode = e.target.value;
     const pu = pollingUnits.find(p => p.puCode === puCode);
     setFormData(prev => ({ ...prev, puCode, puName: pu ? pu.puName : '' }));
@@ -62,16 +410,13 @@ export default function FormManager() {
     setUiMessage({ text: '', type: '' });
 
     if (!formData.fullName || !formData.telNo || !formData.lga || !formData.puCode || !formData.bankDetails.accountNo) {
-      setUiMessage({ text: 'Please complete all critical starred (*) form parameters.', type: 'error' });
+      setUiMessage({ text: 'Please complete all required (*) fields before submitting.', type: 'error' });
       return;
     }
 
     const result = await submitForm(formData);
 
     if (!result.success) {
-      // Server definitively rejected this (duplicate NIN/PVC, mismatched
-      // polling unit, bad field) — it was NOT queued offline, so the
-      // person needs to fix and resubmit rather than assume it saved.
       setUiMessage({ text: result.error, type: 'error' });
       return;
     }
@@ -84,91 +429,117 @@ export default function FormManager() {
     selectLga('');
 
     if (result.status === 'online') {
-      setUiMessage({ text: 'PUC Member Nomination Document pushed directly to database!', type: 'success' });
+      setUiMessage({ text: 'Your nomination has been received and recorded.', type: 'success' });
     } else {
-      setUiMessage({ text: 'Saved locally inside device database memory. Sync will deploy automatically.', type: 'warning' });
+      setUiMessage({ text: 'Saved on this device. It will be submitted automatically once you are back online.', type: 'warning' });
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen security-weave py-8 px-4 sm:px-6 lg:px-8 font-body">
+      <div className="max-w-3xl mx-auto space-y-5">
 
-        {/* Sync Indicator Banner */}
-        <div className={`p-4 rounded-xl border flex items-center justify-between shadow-sm ${
-          isOnline ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'
+        {/* Connectivity status — quiet, functional, not a hero element */}
+        <div className={`px-4 py-2.5 rounded-md border flex items-center justify-between text-xs ${
+          isOnline ? 'bg-white border-puc-paper-line text-puc-ink/70' : 'bg-puc-brass-soft border-puc-brass/40 text-puc-ink'
         }`}>
-          <div className="flex items-center gap-3">
-            {isOnline ? <Wifi className="h-5 w-5 text-emerald-600 animate-pulse" /> : <WifiOff className="h-5 w-5 text-amber-600" />}
-            <div>
-              <p className="font-bold text-xs uppercase tracking-wider">Operational Node Status</p>
-              <p className="text-sm">{isOnline ? 'System Live - Direct Core Pipelines Active' : 'Offline Engine Engaged — Writes Caching on Client Device'}</p>
-            </div>
+          <div className="flex items-center gap-2">
+            {isOnline ? <Wifi className="h-3.5 w-3.5 text-puc-green" /> : <WifiOff className="h-3.5 w-3.5 text-puc-brass" />}
+            <span className="font-medium">
+              {isOnline ? 'Connected — submissions are sent immediately' : 'Offline — your entry will be saved on this device'}
+            </span>
           </div>
           {queueCount > 0 && (
-            <button onClick={triggerManualSync} disabled={syncing || !isOnline} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg text-xs font-bold border text-slate-700 shadow-sm hover:bg-slate-50">
-              <RefreshCw className={`h-3 w-3 ${syncing ? 'animate-spin' : ''}`} /> Flush Local Logs ({queueCount})
+            <button onClick={triggerManualSync} disabled={syncing || !isOnline} className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded border border-puc-paper-line font-semibold hover:bg-puc-paper">
+              <RefreshCw className={`h-3 w-3 ${syncing ? 'animate-spin' : ''}`} /> Send {queueCount} saved {queueCount === 1 ? 'entry' : 'entries'}
             </button>
           )}
         </div>
 
-        {/* Permanently failed queued submissions — surfaced, not silently dropped */}
         {syncErrors.length > 0 && (
           <div className="space-y-2">
             {syncErrors.map((err) => (
-              <div key={err.localId} className="p-3 rounded-lg border bg-rose-50 border-rose-200 text-rose-900 text-xs flex items-center justify-between gap-3">
-                <span><strong>{err.fullName || 'A queued submission'}</strong> could not be saved: {err.error}</span>
+              <div key={err.localId} className="p-3 rounded-md border bg-puc-error/5 border-puc-error/30 text-puc-error text-xs flex items-center justify-between gap-3">
+                <span><strong>{err.fullName || 'A saved entry'}</strong> could not be submitted: {err.error}</span>
                 <button onClick={() => dismissSyncError(err.localId)} className="shrink-0 font-bold underline">Dismiss</button>
               </div>
             ))}
           </div>
         )}
 
-        {/* Core Nomination Form Surface Layout */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden">
-          <div className="bg-slate-900 p-6 text-white border-b border-slate-800 text-center">
-            <h2 className="text-lg font-black tracking-wider uppercase text-emerald-400">Polling Unit Committee (PUC)</h2>
-            <h1 className="text-xl font-bold tracking-tight text-white mt-0.5">MEMBER'S NOMINATION FORM</h1>
+        {/* The document itself */}
+        <div className="bg-white rounded-md border border-puc-paper-line shadow-[0_1px_3px_rgba(15,81,50,0.08)] overflow-hidden">
+
+          {/* Letterhead */}
+          <div className="relative bg-puc-green text-white px-6 py-7 overflow-hidden">
+            <div
+              className="absolute inset-0 opacity-[0.06]"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(45deg, currentColor 0px, currentColor 1px, transparent 1px, transparent 10px)',
+              }}
+            />
+            <div className="relative flex items-start justify-between gap-4">
+              <div>
+                <p className="font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-puc-brass-soft">
+                  All Progressives Congress
+                </p>
+                <h1 className="font-display text-2xl font-bold tracking-tight mt-1">
+                  Polling Unit Committee
+                </h1>
+                <p className="font-body text-sm text-white/75 mt-0.5">Member's Nomination Form</p>
+              </div>
+              <div className="shrink-0 bg-white rounded-md p-1.5 shadow-sm border border-black/5">
+                <img
+                  src={apcLogo}
+                  alt="All Progressives Congress logo"
+                  className="h-14 w-14 object-contain"
+                />
+              </div>
+            </div>
+            <p className="relative font-mono text-[10px] text-white/60 mt-5 tracking-wide">
+              FORM PUC/NG/2026 · Retain a copy of your PVC alongside this submission
+            </p>
           </div>
 
-          <form onSubmit={handleFormSubmit} className="p-6 space-y-6 divide-y divide-slate-100">
+          <form onSubmit={handleFormSubmit} className="p-6 space-y-7">
 
-            {/* SECTION 1: Personal Particulars */}
+            {/* PART A */}
             <div className="space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2"><FileText className="h-4 w-4 text-slate-400" /> 01. Personal Identity Data</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SectionHeading letter="A" title="Personal Particulars" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Full Name *</label>
-                  <input type="text" name="fullName" value={formData.fullName} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="SURNAME Firstname Othername" />
+                  <label className={labelClass}>Full Name *</label>
+                  <input type="text" name="fullName" value={formData.fullName} onChange={handleTopLevelChange} className={inputClass} placeholder="SURNAME Firstname Othername" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Residential Address *</label>
-                  <input type="text" name="address" value={formData.address} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="Street Number, Ward Block Location" />
+                  <label className={labelClass}>Residential Address *</label>
+                  <input type="text" name="address" value={formData.address} onChange={handleTopLevelChange} className={inputClass} placeholder="Street, house number, ward area" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Telephone Number *</label>
-                  <input type="tel" name="telNo" value={formData.telNo} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="08012345678" />
+                  <label className={labelClass}>Telephone Number *</label>
+                  <input type="tel" name="telNo" value={formData.telNo} onChange={handleTopLevelChange} className={inputClass} placeholder="08012345678" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">E-Mail Address</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="nominee@domain.com" />
+                  <label className={labelClass}>Email Address</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleTopLevelChange} className={inputClass} placeholder="nominee@domain.com" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Sex *</label>
-                  <select name="sex" value={formData.sex} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-slate-900">
-                    <option value="">Select Gender</option>
-                    <option value="M">Male (M)</option>
-                    <option value="F">Female (F)</option>
+                  <label className={labelClass}>Sex *</label>
+                  <select name="sex" value={formData.sex} onChange={handleTopLevelChange} className={`${inputClass} bg-white`}>
+                    <option value="">Select</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Date of Birth *</label>
-                  <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" />
+                  <label className={labelClass}>Date of Birth *</label>
+                  <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleTopLevelChange} className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Marital Status *</label>
-                  <select name="maritalStatus" value={formData.maritalStatus} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-slate-900">
-                    <option value="">Select Status</option>
+                  <label className={labelClass}>Marital Status *</label>
+                  <select name="maritalStatus" value={formData.maritalStatus} onChange={handleTopLevelChange} className={`${inputClass} bg-white`}>
+                    <option value="">Select</option>
                     <option value="Single">Single</option>
                     <option value="Married">Married</option>
                     <option value="Divorced">Divorced</option>
@@ -178,124 +549,95 @@ export default function FormManager() {
               </div>
             </div>
 
-            {/* SECTION 2: Election and Boundary Records */}
-            <div className="pt-5 space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2"><FileText className="h-4 w-4 text-slate-400" /> 02. Election Assignment Fields</h3>
+            <div className="border-t border-puc-paper-line" />
+
+            {/* PART B */}
+            <div className="space-y-4">
+              <SectionHeading letter="B" title="Electoral Assignment" />
 
               {locationError && (
-                <p className="text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-2.5">{locationError}</p>
+                <p className="text-xs font-medium text-puc-error bg-puc-error/5 border border-puc-error/30 rounded-md p-2.5">{locationError}</p>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">LGA *</label>
-                  <select
-                    name="lga"
-                    value={selectedLga}
-                    onChange={handleLgaChange}
-                    disabled={loadingLgas}
-                    className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-slate-900 disabled:opacity-60"
-                  >
-                    <option value="">{loadingLgas ? 'Loading LGAs…' : 'Select LGA'}</option>
-                    {lgas.map((lga) => (
-                      <option key={lga} value={lga}>{lga}</option>
-                    ))}
+                  <label className={labelClass}>LGA *</label>
+                  <select name="lga" value={selectedLga} onChange={handleLgaChange} disabled={loadingLgas} className={`${inputClass} bg-white disabled:opacity-60`}>
+                    <option value="">{loadingLgas ? 'Loading…' : 'Select LGA'}</option>
+                    {lgas.map((lga) => <option key={lga} value={lga}>{lga}</option>)}
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Ward *</label>
-                  <select
-                    name="ward"
-                    value={selectedWard}
-                    onChange={handleWardChange}
-                    disabled={!selectedLga || loadingWards}
-                    className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-slate-900 disabled:opacity-60"
-                  >
-                    <option value="">
-                      {!selectedLga ? 'Select an LGA first' : loadingWards ? 'Loading wards…' : 'Select Ward'}
-                    </option>
-                    {wards.map((ward) => (
-                      <option key={ward} value={ward}>{ward}</option>
-                    ))}
+                  <label className={labelClass}>Ward *</label>
+                  <select name="ward" value={selectedWard} onChange={handleWardChange} disabled={!selectedLga || loadingWards} className={`${inputClass} bg-white disabled:opacity-60`}>
+                    <option value="">{!selectedLga ? 'Select an LGA first' : loadingWards ? 'Loading…' : 'Select Ward'}</option>
+                    {wards.map((ward) => <option key={ward} value={ward}>{ward}</option>)}
                   </select>
                 </div>
-
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Polling Unit *</label>
-                  <select
-                    name="puCode"
-                    value={formData.puCode}
-                    onChange={handlePuChange}
-                    disabled={!selectedWard || loadingPUs}
-                    className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 bg-white focus:ring-2 focus:ring-slate-900 disabled:opacity-60"
-                  >
-                    <option value="">
-                      {!selectedWard ? 'Select a ward first' : loadingPUs ? 'Loading polling units…' : 'Select Polling Unit'}
-                    </option>
-                    {pollingUnits.map((pu) => (
-                      <option key={pu.puCode} value={pu.puCode}>
-                        {pu.puName} — {pu.puCode}
-                      </option>
-                    ))}
+                  <label className={labelClass}>Polling Unit *</label>
+                  <select name="puCode" value={formData.puCode} onChange={handlePuChange} disabled={!selectedWard || loadingPUs} className={`${inputClass} bg-white disabled:opacity-60`}>
+                    <option value="">{!selectedWard ? 'Select a ward first' : loadingPUs ? 'Loading…' : 'Select Polling Unit'}</option>
+                    {pollingUnits.map((pu) => <option key={pu.puCode} value={pu.puCode}>{pu.puName} — {pu.puCode}</option>)}
                   </select>
                   {formData.puCode && (
-                    <p className="text-[11px] text-slate-500 mt-1">PU Code: <span className="font-mono font-semibold text-slate-700">{formData.puCode}</span></p>
+                    <p className="font-mono text-[11px] text-puc-green mt-1.5">PU Code: {formData.puCode}</p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">PVC Number (Permanent Voter Card) *</label>
-                  <input type="text" name="pvcNumber" value={formData.pvcNumber} onChange={handleTopLevelChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="Enter Full Card String" />
+                  <label className={labelClass}>PVC Number *</label>
+                  <input type="text" name="pvcNumber" value={formData.pvcNumber} onChange={handleTopLevelChange} className={`${inputClass} font-mono`} placeholder="Enter full card number" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">NIN (National Identification No) *</label>
-                  <input type="text" name="nin" value={formData.nin} onChange={handleTopLevelChange} maxLength={11} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="11-Digit Number" />
-                </div>
-              </div>
-              <p className="text-[11px] font-semibold text-slate-500 bg-slate-50 p-2.5 rounded border border-dashed border-slate-200">
-                ⚠️ NOTE: Remind candidate to provide a clean and clear physical photocopy of their Permanent Voter's Card (PVC) alongside this submittal.
-              </p>
-            </div>
-
-            {/* SECTION 3: Banking Remittance Details */}
-            <div className="pt-5 space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2"><FileText className="h-4 w-4 text-slate-400" /> 03. Financial Clearance Matrix</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Bank Name *</label>
-                  <input type="text" name="bankName" value={formData.bankDetails.bankName} onChange={handleBankChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="GTBank, Zenith, etc." />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Account Number *</label>
-                  <input type="text" name="accountNo" value={formData.bankDetails.accountNo} onChange={handleBankChange} maxLength={10} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="10 Digits" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Account Name *</label>
-                  <input type="text" name="accountName" value={formData.bankDetails.accountName} onChange={handleBankChange} className="w-full px-3 py-2 border rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-slate-900" placeholder="Must Match Full Name" />
+                  <label className={labelClass}>NIN *</label>
+                  <input type="text" name="nin" value={formData.nin} onChange={handleTopLevelChange} maxLength={11} className={`${inputClass} font-mono`} placeholder="11-digit number" />
                 </div>
               </div>
             </div>
 
-            {/* Feedback Notifications Block */}
+            <div className="border-t border-puc-paper-line" />
+
+            {/* PART C */}
+            <div className="space-y-4">
+              <SectionHeading letter="C" title="Remittance Account" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                <div>
+                  <label className={labelClass}>Bank Name *</label>
+                  <input type="text" name="bankName" value={formData.bankDetails.bankName} onChange={handleBankChange} className={inputClass} placeholder="e.g. GTBank" />
+                </div>
+                <div>
+                  <label className={labelClass}>Account Number *</label>
+                  <input type="text" name="accountNo" value={formData.bankDetails.accountNo} onChange={handleBankChange} maxLength={10} className={`${inputClass} font-mono`} placeholder="10 digits" />
+                </div>
+                <div>
+                  <label className={labelClass}>Account Name *</label>
+                  <input type="text" name="accountName" value={formData.bankDetails.accountName} onChange={handleBankChange} className={inputClass} placeholder="Must match full name" />
+                </div>
+              </div>
+            </div>
+
             {uiMessage.text && (
-              <div className={`mt-4 p-3 rounded-lg text-xs font-bold border ${
-                uiMessage.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
-                uiMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
-                'bg-rose-50 border-rose-200 text-rose-800'
+              <div className={`p-3 rounded-md text-xs font-medium border ${
+                uiMessage.type === 'success' ? 'bg-puc-green/5 border-puc-green/30 text-puc-green-dark' :
+                uiMessage.type === 'warning' ? 'bg-puc-brass-soft border-puc-brass/40 text-puc-ink' :
+                'bg-puc-error/5 border-puc-error/30 text-puc-error'
               }`}>
                 {uiMessage.text}
               </div>
             )}
 
-            <div className="pt-4">
-              <button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition-all active:scale-[0.99]">
-                Submit Committee Member Nomination
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-puc-green hover:bg-puc-green-dark text-white font-semibold py-3 px-4 rounded-md text-sm tracking-wide shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-puc-green/50 focus:ring-offset-2"
+            >
+              Submit Nomination
+            </button>
           </form>
         </div>
 
+        <p className="text-center text-[11px] text-puc-ink/40">
+          Information submitted here is used solely for Polling Unit Committee administration.
+        </p>
       </div>
     </div>
   );
