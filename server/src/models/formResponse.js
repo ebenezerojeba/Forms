@@ -81,6 +81,6 @@ FormResponseSchema.index({ createdAt: -1 });
 // a full collection scan.
 FormResponseSchema.index({ fullName: "text" });
 
-const FormResponse = mongoose.model("FormResponse", FormResponseSchema);
+const FormResponse = mongoose.models.FormResponse || mongoose.model("FormResponse", FormResponseSchema);
 
 export default FormResponse;

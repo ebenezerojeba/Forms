@@ -14,6 +14,6 @@ const PollingUnitSchema = new mongoose.Schema(
 // integrity check on nomination submit.
 PollingUnitSchema.index({ lga: 1, ward: 1 });
 
-const PollingUnit = mongoose.model("PollingUnit", PollingUnitSchema);
+const PollingUnit = mongoose.models.PollingUnit || mongoose.model("PollingUnit", PollingUnitSchema);
 
 export default PollingUnit;

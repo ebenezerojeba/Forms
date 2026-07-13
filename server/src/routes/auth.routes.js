@@ -1,10 +1,11 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import Admin from "../models/Admin.js";
+// import Admin from "../models/Admin.js";
 import { validateBody } from "../middleware/validate.js";
 import { loginSchema } from "../schemas/nominationSchema.js";
 import { loginLimiter } from "../middleware/rateLimiter.js";
 import { protect } from "../middleware/auth.js";
+import Admin from "../models/admin.js";
 
 const router = express.Router();
 

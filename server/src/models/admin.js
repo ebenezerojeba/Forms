@@ -17,7 +17,7 @@ const AdminSchema = new mongoose.Schema(
     passwordHash: {
       type: String,
       required: true,
-      select: false, // never returned by default queries
+      select: false,
     },
     role: {
       type: String,
@@ -37,17 +37,15 @@ const AdminSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Instance helper — never expose passwordHash comparison logic to callers
 AdminSchema.methods.comparePassword = function (candidate) {
   return bcrypt.compare(candidate, this.passwordHash);
 };
 
-// Static helper used by the CLI provisioning script and any future
-// "create admin" admin-only endpoint
 AdminSchema.statics.hashPassword = function (plainPassword) {
   return bcrypt.hash(plainPassword, SALT_ROUNDS);
 };
 
-const Admin = mongoose.model("Admin", AdminSchema);
+const Admin =
+  mongoose.models.Admin || mongoose.model("Admin", AdminSchema);
 
 export default Admin;
