@@ -1,4 +1,4 @@
-import PollingUnit from "../models/PollingUnit.js";
+import PollingUnit from "../models/pollingUnit.js";
 
 /**
  * Zod confirms the nomination payload is well-*formed*; this confirms it's
