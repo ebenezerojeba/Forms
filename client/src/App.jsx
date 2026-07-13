@@ -1,26 +1,36 @@
-import React, { useState } from 'react';
-import FormManager from './components/FormManager';
-import AdminDashboard from './components/AdminDashboard';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import FormManager from "./components/FormManager";
+import AdminLogin from "./components/AdminLogin";
+import AdminDashboard from "./components/AdminDashboard";
+import RequireAuth from "./components/RequireAuth";
 
-function App() {
-  const [view, setView] = useState('user'); // Toggle modes: 'user' or 'admin'
-
+export default function App() {
   return (
     <div className="relative antialiased selection:bg-slate-900 selection:text-white">
-      
-      {/* Absolute Layout Workspace Toggle Switch */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => setView(view === 'user' ? 'admin' : 'user')}
-          className="bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs font-black px-4 py-2 rounded-full shadow-2xl transition-all"
-        >
-          Switch View: Mode [{view.toUpperCase()}]
-        </button>
-      </div>
+      <Routes>
+        {/* Public nomination form */}
+        <Route path="/" element={<FormManager />} />
 
-      {view === 'user' ? <FormManager /> : <AdminDashboard />}
+        {/* Staff sign-in — not linked from the public form; staff are
+            expected to know/bookmark this URL directly. */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Protected admin core — RequireAuth is the only thing that
+            decides whether AdminDashboard ever mounts. */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth>
+              <AdminDashboard />
+            </RequireAuth>
+          }
+        />
+
+        {/* Anything else falls back to the public form rather than a
+            blank 404 — this is a public-facing civic tool. */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
-
-export default App;

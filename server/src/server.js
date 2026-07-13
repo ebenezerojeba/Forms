@@ -29,9 +29,26 @@ const app = express();
 
 // --- Security middleware, before anything else ------------------------
 app.use(helmet());
+// app.use(
+//   cors({
+//     origin: process.env.CLIENT_ORIGIN, // exact frontend origin, not "*"
+//     credentials: true,
+//   })
+// );
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://apcforms.vercel.app",
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN, // exact frontend origin, not "*"
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
