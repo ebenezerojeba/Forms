@@ -42,3 +42,18 @@
       transparent 8px
     );
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .nomination-slip-modal,
+  .nomination-slip-modal * {
+    visibility: visible;
+  }
+  .nomination-slip-modal {
+    position: fixed;
+    inset: 0;
+    background: white;
+  }
+}

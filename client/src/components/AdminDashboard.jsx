@@ -1,3 +1,5 @@
+
+
 // import React, { useEffect, useState, useCallback } from "react";
 // import { ShieldCheck, ChevronLeft, ChevronRight, FileSpreadsheet, FileJson, Users, UserPlus, Search, LogOut } from "lucide-react";
 // import { useAuth } from "../context/AuthContext";
@@ -160,6 +162,7 @@
 //                 <table className="w-full text-left border-collapse text-xs">
 //                   <thead>
 //                     <tr className="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
+//                       <th className="p-4">Photo</th>
 //                       <th className="p-4">Full Name</th>
 //                       <th className="p-4">Contact (Tel/Email)</th>
 //                       <th className="p-4">LGA / Ward Designation</th>
@@ -171,12 +174,28 @@
 //                   </thead>
 //                   <tbody className="divide-y divide-slate-800 text-slate-300">
 //                     {loading ? (
-//                       <tr><td colSpan="7" className="p-8 text-center text-slate-500">Loading…</td></tr>
+//                       <tr><td colSpan="8" className="p-8 text-center text-slate-500">Loading…</td></tr>
 //                     ) : submissions.length === 0 ? (
-//                       <tr><td colSpan="7" className="p-8 text-center text-slate-500">No records found.</td></tr>
+//                       <tr><td colSpan="8" className="p-8 text-center text-slate-500">No records found.</td></tr>
 //                     ) : (
 //                       submissions.map((item) => (
 //                         <tr key={item._id} className="hover:bg-slate-950/40 transition-all">
+//                           <td className="p-4">
+//                             {item.photoUrl ? (
+//                               <a href={item.photoUrl} target="_blank" rel="noopener noreferrer" title="Open full size">
+//                                 <img
+//                                   src={item.photoUrl}
+//                                   alt={`${item.fullName}'s passport photograph`}
+//                                   className="h-12 w-10 object-cover rounded border border-slate-700 hover:border-emerald-500 transition-colors"
+//                                   loading="lazy"
+//                                 />
+//                               </a>
+//                             ) : (
+//                               <div className="h-12 w-10 rounded border border-slate-800 bg-slate-950 flex items-center justify-center text-slate-600 text-[9px] font-bold uppercase">
+//                                 None
+//                               </div>
+//                             )}
+//                           </td>
 //                           <td className="p-4 font-bold text-white whitespace-nowrap">{item.fullName}</td>
 //                           <td className="p-4 space-y-0.5">
 //                             <p className="font-semibold text-slate-200">{item.telNo}</p>
@@ -229,12 +248,12 @@
 //   );
 // }
 
-
 import React, { useEffect, useState, useCallback } from "react";
 import { ShieldCheck, ChevronLeft, ChevronRight, FileSpreadsheet, FileJson, Users, UserPlus, Search, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../config/api";
 import AdminManualEntryForm from "../components/AdminManualEntryForm";
+import NominationSlipModal from "../components/NominationSlipModal";
 
 const PAGE_SIZE = 15; // matches the backend default — was 12 vs 15 before, silently wasting a request's worth of rows
 
@@ -245,6 +264,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState("list"); // 'list' | 'add'
+  const [selectedNominee, setSelectedNominee] = useState(null);
 
   const fetchRecords = useCallback(
     async (targetPage = 1, search = searchTerm) => {
@@ -388,6 +408,7 @@ export default function AdminDashboard() {
 
             {/* Nomination Grid */}
             <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-2xl">
+              <p className="px-4 pt-3 text-[11px] text-slate-500">Click a row to view full details and generate a printable slip.</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
@@ -409,10 +430,20 @@ export default function AdminDashboard() {
                       <tr><td colSpan="8" className="p-8 text-center text-slate-500">No records found.</td></tr>
                     ) : (
                       submissions.map((item) => (
-                        <tr key={item._id} className="hover:bg-slate-950/40 transition-all">
+                        <tr
+                          key={item._id}
+                          onClick={() => setSelectedNominee(item)}
+                          className="hover:bg-slate-950/40 transition-all cursor-pointer"
+                        >
                           <td className="p-4">
                             {item.photoUrl ? (
-                              <a href={item.photoUrl} target="_blank" rel="noopener noreferrer" title="Open full size">
+                              <a
+                                href={item.photoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open full size"
+                                onClick={(e) => e.stopPropagation()} // opening the raw image shouldn't also open the slip modal
+                              >
                                 <img
                                   src={item.photoUrl}
                                   alt={`${item.fullName}'s passport photograph`}
@@ -474,6 +505,10 @@ export default function AdminDashboard() {
           </>
         )}
       </div>
+
+      {selectedNominee && (
+        <NominationSlipModal nominee={selectedNominee} onClose={() => setSelectedNominee(null)} />
+      )}
     </div>
   );
 }
