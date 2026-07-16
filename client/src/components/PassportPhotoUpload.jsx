@@ -138,36 +138,24 @@
 
 
 
-
 import React, { useRef, useState, useEffect } from 'react';
 import { Camera, X, Loader2, AlertCircle } from 'lucide-react';
 import * as faceapi from 'face-api.js';
 import { compressImage } from '../utils/cloudinaryUpload';
 
-const MAX_RAW_BYTES = 15 * 1024 * 1024; // reject absurdly large files before even trying to process them
+const MAX_RAW_BYTES = 15 * 1024 * 1024;
 
-// ---------------------------------------------------------------------------
-// Photo quality assumptions — no official spec was provided for these, so
-// these are reasonable passport-photo defaults. Tighten/loosen if INEC or
-// your party's guidelines specify exact numbers.
-// ---------------------------------------------------------------------------
 const MIN_WIDTH = 400;
 const MIN_HEIGHT = 500;
-const MIN_ASPECT_RATIO = 1.15; // height / width — rejects landscape or near-square selfie crops
-const MAX_ASPECT_RATIO = 1.6;  // rejects very tall/narrow crops
+const MIN_ASPECT_RATIO = 1.15;
+const MAX_ASPECT_RATIO = 1.6;
 
-const MIN_FACE_HEIGHT_RATIO = 0.15; // face bounding box must be at least this fraction of image height
-const MAX_FACE_HEIGHT_RATIO = 0.75; // ...and no more than this (rejects extreme close-ups)
-const MAX_CENTER_OFFSET_RATIO = 0.2; // face center must be within this fraction of image width from center
+const MIN_FACE_HEIGHT_RATIO = 0.15;
+const MAX_FACE_HEIGHT_RATIO = 0.75;
+const MAX_CENTER_OFFSET_RATIO = 0.2;
 
-// Models must be self-hosted here (not loaded from a CDN) so face detection
-// still works when the app is used offline — see setup note above.
 const MODEL_URL = '/models';
 
-// Module-scoped (not component state) so the model loads once per page
-// load, not once per remount. FormManager remounts this component via a
-// `key` bump after every successful submission — without this being
-// outside the component, every single submission would re-fetch the model.
 let modelLoadPromise = null;
 function ensureModelsLoaded() {
   if (!modelLoadPromise) {
@@ -189,11 +177,6 @@ function loadImage(file) {
   });
 }
 
-/**
- * Runs quality, framing, and face-count/position checks on the raw file
- * before it's ever compressed or handed to the parent. Throws with a
- * user-facing message on the first failed check.
- */
 async function validatePhoto(file) {
   const { img, url, width, height } = await loadImage(file);
   try {
@@ -235,26 +218,12 @@ async function validatePhoto(file) {
   }
 }
 
-/**
- * Captures a passport photo, validates it (quality, framing, single
- * centered face), compresses it client-side, and hands the resulting Blob
- * up to the parent via onPhotoReady. This component does NOT upload
- * anywhere — FormManager decides when/whether to push it to Cloudinary,
- * since that depends on connectivity state this component doesn't know
- * about.
- */
 export default function PassportPhotoUpload({ onPhotoReady, disabled = false }) {
   const inputRef = useRef(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [status, setStatus] = useState('idle'); // 'idle' | 'checking' | 'compressing'
+  const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
 
-  // Tracks the latest previewUrl so the unmount-only cleanup effect below
-  // can revoke whatever's current without re-running on every change (which
-  // would fight with the explicit revokes already done in
-  // handleFileSelect/handleRemove). This is what was leaking before: when
-  // FormManager remounts this component via `key` after a submit, the old
-  // instance unmounts with no cleanup, so its blob URL never got released.
   const previewUrlRef = useRef(null);
   useEffect(() => {
     previewUrlRef.current = previewUrl;
@@ -270,7 +239,7 @@ export default function PassportPhotoUpload({ onPhotoReady, disabled = false }) 
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
-    e.target.value = ''; // allow re-selecting the same file after a retake
+    e.target.value = '';
     if (!file) return;
 
     setError('');
@@ -312,8 +281,8 @@ export default function PassportPhotoUpload({ onPhotoReady, disabled = false }) 
   const statusLabel = status === 'checking' ? 'Checking photo…' : status === 'compressing' ? 'Compressing…' : 'Add Photo';
 
   return (
-    <div>
-      <label className="block text-[11px] font-semibold uppercase tracking-wide text-puc-ink/70 mb-1">
+    <div className="w-full">
+      <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-puc-ink/70 mb-1.5">
         Passport Photograph *
       </label>
 
@@ -327,21 +296,21 @@ export default function PassportPhotoUpload({ onPhotoReady, disabled = false }) 
       />
 
       {previewUrl ? (
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
           <img
             src={previewUrl}
             alt="Passport photograph preview"
-            className="h-28 w-24 object-cover rounded-md border border-puc-paper-line"
+            className="h-24 w-20 sm:h-28 sm:w-24 object-cover rounded-md border border-puc-paper-line flex-shrink-0"
           />
-          <div className="space-y-2">
+          <div className="space-y-2 text-center sm:text-left w-full sm:w-auto">
             <p className="text-xs text-puc-ink/70">Photo ready.</p>
             <button
               type="button"
               onClick={handleRemove}
               disabled={disabled || processing}
-              className="flex items-center gap-1.5 text-xs font-semibold text-puc-error hover:underline disabled:opacity-50"
+              className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-semibold text-puc-error hover:underline disabled:opacity-50 w-full sm:w-auto"
             >
-              <X className="h-3.5 w-3.5" /> Remove and retake
+              <X className="h-3.5 w-3.5 shrink-0" /> Remove and retake
             </button>
           </div>
         </div>
@@ -350,26 +319,27 @@ export default function PassportPhotoUpload({ onPhotoReady, disabled = false }) 
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={disabled || processing}
-          className="flex flex-col items-center justify-center gap-2 h-28 w-24 rounded-md border-2 border-dashed border-puc-paper-line text-puc-ink/50 hover:border-puc-green hover:text-puc-green transition-colors disabled:opacity-50"
+          className="flex flex-col items-center justify-center gap-2 h-24 w-20 sm:h-28 sm:w-24 rounded-md border-2 border-dashed border-puc-paper-line text-puc-ink/50 hover:border-puc-green hover:text-puc-green transition-colors disabled:opacity-50 mx-auto sm:mx-0"
         >
           {processing ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
             <Camera className="h-5 w-5" />
           )}
-          <span className="text-[10px] font-semibold uppercase tracking-wide px-1 text-center">
+          <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide px-1 text-center leading-tight">
             {statusLabel}
           </span>
         </button>
       )}
 
       {error && (
-        <p className="flex items-center gap-1.5 text-xs font-medium text-puc-error mt-2">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" /> {error}
+        <p className="flex items-start sm:items-center gap-1.5 text-xs font-medium text-puc-error mt-2">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 sm:mt-0" /> 
+          <span className="break-words">{error}</span>
         </p>
       )}
 
-      <p className="text-[11px] text-puc-ink/50 mt-1.5">
+      <p className="text-[10px] sm:text-[11px] text-puc-ink/50 mt-2 sm:mt-1.5">
         A clear, front-facing photo against a plain background, similar to a passport photo.
       </p>
     </div>
